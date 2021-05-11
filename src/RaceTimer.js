@@ -8,6 +8,7 @@ class RaceTimer extends Component {
     state = {
         loading: true,
         timer: null,
+        authenticated: false
     };
 
     componentDidMount() {
@@ -17,16 +18,14 @@ class RaceTimer extends Component {
         });
 
         // Listen to the "delta" event to get the stream data
-        this.client = new Client({
+        let params = {
             hostname: 'localhost',
             port: 3000,
             useTLS: false,
             reconnect: true,
             autoConnect: true,
             notifications: false,
-            useAuthentication: true,
-            username: 'test',
-            password: 'test',
+            useAuthentication: false,
             subscriptions: [
                 {
                     context: 'vessels.*',
@@ -42,7 +41,18 @@ class RaceTimer extends Component {
                     ],
                 },
             ],
-        })
+        }
+        const username = localStorage.getItem('username');
+        const password = localStorage.getItem('password');
+
+        if( username &&  password){
+            params.username = username
+            params.password = password
+            params.useAuthentication = true
+            console.log('use cached credentials')
+        }
+
+        this.client = new Client(params)
 
         this.client.on('delta', (delta) => {
             let state = {}
@@ -59,11 +69,36 @@ class RaceTimer extends Component {
             })
             this.setState(state)
         })
+
+        this.client.on('authenticated', (authData) => {
+            console.log('authenticated')
+            this.setState({authenticated: true})
+        })
+
+        // The 'authenticated' is not emitted if we specify credentials when creating the client,
+        // so listen for this event and check if we requested the authenticated connection
+        this.client.on('connect', (authData) => {
+            console.log('connect')
+            if( params.useAuthentication )
+                this.setState({authenticated: true})
+        })
+
+        this.client.on('error', (error) => {
+            console.log(`error ${error}`)
+            this.setState({authenticated: false})
+        })
+
     }
 
     componentWillUnmount() {
         if ( typeof clearInterval === "function")
             clearInterval(this.state.timer);
+    }
+
+    onLoginSubmit = (username, password) => {
+        this.client.authenticate(username, password)
+        localStorage.setItem('username', username);
+        localStorage.setItem('password', password);
     }
 
     putTimeToStart = (tts) => {
@@ -93,7 +128,7 @@ class RaceTimer extends Component {
 
     render() {
         return (
-            <RaceTimerView {...this.state} start={this.start} stop={this.stop} sync={this.sync}
+            <RaceTimerView {...this.state} start={this.start} stop={this.stop} sync={this.sync} onLoginSubmit={this.onLoginSubmit}
             />
         );
     }

@@ -1,18 +1,33 @@
 import React from 'react';
 import {Button, Paper, Table, TableBody, TableCell, TableContainer, TableRow, Typography} from "@material-ui/core";
+import LoginDialog from "./LoginDialog";
 
 function RaceTimerView(props){
 
+    const [loginDialogOpen, setLoginDialogOpen] = React.useState(false);
+
     function formatDuration (seconds) {
         return new Date(1000 * seconds).toISOString().substr(11, 8)
+    }
+
+    const startOrLogin = () => {
+        if(props.authenticated){
+            props.start()
+        }else{
+            setLoginDialogOpen( true)
+        }
+    }
+
+    const handleLoginClose = () => {
+        setLoginDialogOpen( false)
     }
 
     function startButton (props){
         return(
             <TableRow>
                 <TableCell align="center" colspan={2} >
-                    <Button onClick={() => props.start()} variant="contained" color="primary">
-                        Start
+                    <Button onClick={() => startOrLogin()} variant="contained" color="primary">
+                        { props.authenticated ? 'Start' : 'Login'}
                     </Button>
                 </TableCell>
             </TableRow>
@@ -40,6 +55,7 @@ function RaceTimerView(props){
         return (<div>Connecting to the server...</div>)
     } else {
         return (
+            <div>
             <TableContainer component={Paper}>
                 <Table size={'small'} >
                     <TableBody>
@@ -52,6 +68,8 @@ function RaceTimerView(props){
                     </TableBody>
                 </Table>
             </TableContainer>
+                <LoginDialog onLoginSubmit={props.onLoginSubmit} open={loginDialogOpen} handleClose={handleLoginClose}/>
+            </div>
         );
     }
 }
