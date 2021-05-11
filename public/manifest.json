@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "Race Timer",
+  "name": "Sailing Race Timer",
   "icons": [
     {
       "src": "favicon.ico",

@@ -1,5 +1,16 @@
 import React from 'react';
-import {Button, Paper, Table, TableBody, TableCell, TableContainer, TableRow, Typography} from "@material-ui/core";
+import {
+    Button,
+    IconButton,
+    Paper,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableRow,
+    Typography
+} from "@material-ui/core";
+import ExitToAppOutlinedIcon from '@material-ui/icons/ExitToAppOutlined';
 import LoginDialog from "./LoginDialog";
 
 function RaceTimerView(props){
@@ -10,31 +21,43 @@ function RaceTimerView(props){
         return new Date(1000 * seconds).toISOString().substr(11, 8)
     }
 
-    const startOrLogin = () => {
-        if(props.authenticated){
-            props.start()
-        }else{
-            setLoginDialogOpen( true)
-        }
-    }
-
     const handleLoginClose = () => {
         setLoginDialogOpen( false)
     }
 
-    function startButton (props){
+    function loginButton(props){
         return(
             <TableRow>
                 <TableCell align="center" colspan={2} >
-                    <Button onClick={() => startOrLogin()} variant="contained" color="primary">
-                        { props.authenticated ? 'Start' : 'Login'}
+                    <Button onClick={() => setLoginDialogOpen( true)} variant="contained" color="primary">
+                        Login
                     </Button>
                 </TableCell>
             </TableRow>
         );
     }
 
-    function syncAndStopButtons (props){
+    function logoutButton(props){
+        return(
+            <IconButton aria-label="delete" onClick={() => { props.onLogout() }}>
+                <ExitToAppOutlinedIcon />
+            </IconButton>
+        );
+    }
+
+    function startButton(props){
+        return(
+            <TableRow>
+                <TableCell align="center" colspan={2} >
+                    <Button onClick={() => props.start()} variant="contained" color="primary">
+                        Start
+                    </Button>
+                </TableCell>
+            </TableRow>
+        );
+    }
+
+    function syncAndStopButtons(props){
         return(
             <TableRow>
                 <TableCell align="center">
@@ -64,11 +87,12 @@ function RaceTimerView(props){
                                 <Typography variant="h1">{formatDuration(props.timeToStart)}</Typography>
                             </TableCell>
                         </TableRow>
-                        {props.raceState === 'preparatory' ? syncAndStopButtons(props) : startButton(props)}
+                        <LoginDialog onLoginSubmit={props.onLoginSubmit} open={loginDialogOpen} handleClose={handleLoginClose}/>
+                        {!props.authenticated ? loginButton(props) : props.raceState === 'preparatory' ? syncAndStopButtons(props) : startButton(props)}
+                        {props.authenticated ? logoutButton(props) : ''}
                     </TableBody>
                 </Table>
             </TableContainer>
-                <LoginDialog onLoginSubmit={props.onLoginSubmit} open={loginDialogOpen} handleClose={handleLoginClose}/>
             </div>
         );
     }

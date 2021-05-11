@@ -101,6 +101,12 @@ class RaceTimer extends Component {
         localStorage.setItem('password', password);
     }
 
+    onLogout = () => {
+        localStorage.removeItem('username');
+        localStorage.removeItem('password');
+        this.setState({authenticated: false})
+    }
+
     putTimeToStart = (tts) => {
         this.client
             .API()
@@ -128,7 +134,8 @@ class RaceTimer extends Component {
 
     render() {
         return (
-            <RaceTimerView {...this.state} start={this.start} stop={this.stop} sync={this.sync} onLoginSubmit={this.onLoginSubmit}
+            <RaceTimerView {...this.state} start={this.start} stop={this.stop} sync={this.sync}
+                           onLoginSubmit={this.onLoginSubmit} onLogout={this.onLogout}
             />
         );
     }
